@@ -178,6 +178,7 @@ If you want to access anywhere the `pm` sytem, you will need to add it to the `P
 		* `Done` when the contract is signed and project closed.
 	* `--message "[MESSAGE]"` or `-m` adds a message to the commit.
 	* `--delete [NODE_NUMBER]` or `-d` deletes a node in the history of the project.
+  * `--amend [NODE_NUMBER] [key:value;key2:value2]` or `-a` amend an existing commit. Node number is optional; if not specify, it will update the last node.
 
 * `pm report` generates a word report saved in `./Report` folder. With argument `--excel` it generates a report in Excel.
 
