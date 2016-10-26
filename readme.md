@@ -107,6 +107,7 @@ To generate reports, you will need Word/Office.
 git clone https://github.com/theeko74/pm
 cd pm
 pip install -r requirements.txt
+mkdir database && cd database
 touch db.json
 python3 pm.py status
 ```
