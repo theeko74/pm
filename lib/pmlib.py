@@ -71,8 +71,8 @@ class Workflow:
 				return project
 
 
-	def status(self, all=None, key='status'):
-		"""Display all the projects ongoing"""
+	def status_api(self, all=None, key='status'):
+		"""List all the projects ongoing and returns a context"""
 
 		# Sort projects
 		self.sort_projects(key=key)
@@ -83,9 +83,7 @@ class Workflow:
 		else:
 			temp_projects = self.projects
 
-		# Style
-		print("-" * settings.WIDTH)
-
+		context = []
 		# Display projects
 		for project in temp_projects:
 			project_last_node = project.history[-1]
@@ -105,18 +103,32 @@ class Workflow:
 					color = '\033[91m'
 					end_color = '\033[0m'
 
-			print(color + "#{id:<2} {name:<12}  {type:<4} |{progress:<6}| " \
-				  "{comment}".format(
-				id=project.id,
-				name=project.name[:12],
-				type=project.type,
-				status=project_last_node['status'],
-				progress=settings.PROGRESS[project_last_node['status']],
-				date=datetime.datetime.strftime(
+			context.append({
+				'id': project.id,
+				'name': project.name[:12],
+				'type': project.type,
+				'status': project_last_node['status'],
+				'progress': settings.PROGRESS[project_last_node['status']],
+				'date': datetime.datetime.strftime(
 					project_last_node['date'], '%d/%m/%Y'
 				),
-				comment=comment
-			) + end_color)
+				'comment':comment,
+				'color': color,
+				'end_color': end_color
+			})
+
+		return context
+
+
+	def status(self, all=None, key='status'):
+		"""Display all the status dashboard"""
+		print("-" * settings.WIDTH)
+		
+		# Load context 
+		context = self.status_api(all=all, key=key)
+		for project_context in context:
+			print("{color}#{id:<2} {name:<12}  {type:<4} |{progress:<6}| " \
+				  "{comment}{end_color}".format(**project_context))
 			
 		print("-" * settings.WIDTH)
 
@@ -200,47 +212,61 @@ class Workflow:
 				break
 
 
-	def history(self, id):
+	def history_api(self, id):
 		for project in self.projects + self.projects_done:
 			if project.id == id:
-				print("-" * settings.WIDTH)
-				print("Project #{id:<2}  {name:<10} {type:<3}  {money:>4} kEUR  Duration:{duration:<9}".format(
-					name=project.name,
-					type=project.type,
-					id=project.id,
-					money=project.money,
-					duration=self.duration(
+				context = {
+					'name': project.name,
+					'type': project.type,
+					'id': project.id,
+					'money': project.money,
+					'duration': self.duration(
 						project.history[0]["date"], project.history[-1]["date"]
 					)
-				))
+				}
 				if project.pi or project.money_year:
-					print("             Current year:  {money_year:>5} kEUR  PI: {pi:<7}".format(
-						pi=project.pi, money_year=project.money_year
-					))
+					context['pi'] = project.pi
+					context['money_year'] = project.money_year
 				if project.ref:
-					print("             Ref: {ref:<12}".format(ref=project.ref))
+					context['ref'] = project.ref
 				if project.summary:
-					print("             {summary}".format(
-						summary=self.truncate(project.summary, indent=13)
-					))
-					print("-" * settings.WIDTH)
+					context['summary'] = project.summary
+
+				context['history'] = []
 				for index, hist in enumerate(project.history):
 					if index == 0:
 						days = '--'
 					else:
 						diff = hist['date'] - project.history[index-1]['date']
 						days = str(diff.days) + 'd'
-					print("  {node:>2}   {date:<11} {days:>5}  {status:<5} "\
-						  "|{progress:<6}|  {comment:<35}".format(
-						date=datetime.datetime.strftime(hist['date'], '%d/%m/%Y'),
-						status=hist['status'],
-						comment=self.truncate(hist['comment'], indent=42),
-						progress=settings.PROGRESS[hist['status']],
-						days=days,
-						node=hist["node"]
-					))
-				print("-" * settings.WIDTH)
+					context['history'].append({
+						'date': datetime.datetime.strftime(hist['date'], '%d/%m/%Y'),
+						'status': hist['status'],
+						'comment': self.truncate(hist['comment'], indent=42),
+						'progress': settings.PROGRESS[hist['status']],
+						'days': days,
+						'node': hist["node"]
+					})
 				break
+		return context
+
+
+	def history(self, id):
+		context = self.history_api(id)
+		print("-" * settings.WIDTH)
+		print("Project #{id:<2}  {name:<10} {type:<3}  {money:>4} " \
+			  "kEUR  Duration:{duration:<9}".format(**context))
+		if context.get('pi') or context.get('money_year'):
+			print("             Current year:  {money_year:>5} kEUR  PI: {pi:<7}".format(**context))
+		if context.get('ref'):
+			print("             Ref: {ref:<12}".format(**context))
+		if context.get('summary'):
+			print("             {summary}".format(**context))
+			print("-" * settings.WIDTH)
+		for hist in context['history']:
+			print("  {node:>2}   {date:<11} {days:>5}  {status:<5} "\
+				  "|{progress:<6}|  {comment:<35}".format(**hist))
+		print("-" * settings.WIDTH)
 
 
 	@staticmethod
