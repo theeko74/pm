@@ -69,6 +69,9 @@ def main():
 							   help="add a comment to the commit")
 	commit_parser.add_argument('-d', '--delete', action='store', default=None, dest='node',
 							   help='delete node in the history of the project')
+	commit_parser.add_argument('-a', '--amend', action='store', default=None, nargs='*',
+							   dest='amend', help='amend a node in the history of the project. ' \
+							                      'Ex: --amend [NODE_ID] date:12/01/2015 name:Sanofi')
 
 	# Reports in word
 	report = subparsers.add_parser('report', help="Export the report in word format")
@@ -136,6 +139,24 @@ def main():
 		if args.node:
 			# Remove commit
 			wf.rm_action(args.id, node=args.node)
+		elif args.amend:
+			# Amend a commit
+			params = args.amend
+			if params[0].isdigit():
+				node = int(params[0])
+				params = params[1:]
+			params_dict = {}
+			for param in params:
+				key = param.split(':')[0]
+				value = param.split(':')[1]
+				if key == 'date':
+					value = datetime.datetime.strptime(value, '%d/%m/%Y')
+					print(value)
+				params_dict[key] = value
+			if node:
+				wf.update_action(args.id, params_dict, node=node)
+			else:
+				wf.update_action(args.id, params_dict)
 		else:
 			# Commit
 			status_approved = settings.PROGRESS.keys()

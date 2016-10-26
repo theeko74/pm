@@ -212,6 +212,18 @@ class Workflow:
 				break
 
 
+	def update_action(self, project_id, params, node=None):
+		project = self.find_project(project_id)
+		if project:
+			if node:
+				project.update_action(int(node), params)
+			else:
+				# Update last action
+				project.update_action(project.history[-1]['node'], params)
+			self.save()
+			self.history(project_id)
+
+
 	def history_api(self, id):
 		for project in self.projects + self.projects_done:
 			if project.id == id:
@@ -467,9 +479,8 @@ class Project:
 		self.history = history
 		if self.history:
 			for hist in self.history:
-				hist['date'] = datetime.datetime.strptime(
-					hist['date'], '%Y-%m-%dT%H:%M:%S.%f'
-				)
+				pattern = '%Y-%m-%dT%H:%M:%S.%f' if '.' in hist['date'] else '%Y-%m-%dT%H:%M:%S'
+				hist['date'] = datetime.datetime.strptime(hist['date'], pattern)
 		else:
 			self.history.append({
 				"node": 1,
@@ -491,7 +502,6 @@ class Project:
 		history = copy.deepcopy(self.history)	# Slow method
 		for hist in history:
 			hist['date'] = hist['date'].isoformat()
-		#print(history)
 
 		#JSON
 		return {
@@ -524,6 +534,13 @@ class Project:
 				self.history.remove(hist)
 				break
 
+	def update_action(self, node, params):
+		for hist in self.history:
+			if hist['node'] == node:
+				for key, value in params.items():
+					if key in hist.keys():
+						hist[key] = value
+				break
 
 
 
