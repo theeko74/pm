@@ -82,6 +82,8 @@ def report_word(workflow, all=False):
 	
 	# Open the word file
 	open_file(file_name)
+	print("Done.")
+
 
 def open_file(file_path):
 	"""Function to open a file with the default application and based on the OS platform"""
@@ -159,3 +161,4 @@ def report_excel(workflow, all=False):
 
 	# Open with default app
 	open_file(path_name)
+	print("Done.")

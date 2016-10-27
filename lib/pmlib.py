@@ -186,30 +186,29 @@ class Workflow:
 
 
 	def add_action(self, id, status="", comment="-"):
-		for project in self.projects:
-			if project.id == id:
-				if not status:
-					status = project.history[-1]["status"]
-				project.add_action(status, comment)
-				self.save()
-				if status == "Done":
-					print("Congrats, one more project done !")
-				else:
-					self.history(id)
-				break
+		project = self.find_project(id)
+		if project:
+			if not status:
+				status = project.history[-1]["status"]
+			project.add_action(status, comment)
+			self.save()
+			if status == "Done":
+				print("Congrats, one more project done !")
+			else:
+				self.history(id)
 
 
 	def rm_action(self, project_id, node=None):
-		for project in self.projects + self.projects_done:
-			if project.id == project_id:
-				if node:
-					project.del_action(int(node))
-				else:
-					# Delete last action
-					project.del_action(project.history[-1]["node"])
-				self.save()
-				self.history(project_id)
-				break
+		project = self.find_project(project_id)
+		if project:
+			if node:
+				project.del_action(int(node))
+			else:
+				# Delete last action
+				project.del_action(project.history[-1]["node"])
+			self.save()
+			self.history(project_id)
+			print("Commit removed.")
 
 
 	def update_action(self, project_id, params, node=None):
@@ -222,6 +221,7 @@ class Workflow:
 				project.update_action(project.history[-1]['node'], params)
 			self.save()
 			self.history(project_id)
+			print("Commit updated.")
 
 
 	def history_api(self, id):
