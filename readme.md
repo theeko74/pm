@@ -135,12 +135,13 @@ If you want to access anywhere the `pm` sytem, you will need to add it to the `P
 
 ## Commands
 
-* `pm status` displays the project workflow.
+* `pm status` displays the standard project dashboard. Several options:
 	* `pm status --all` or `-a` diplays all the projects (including the ones that are done);
 	* `pm status -o [options]` sorts the project workflow table by options. Options take:
     * `date`
     * `status`
     * `name`
+  * `pm status -extended` or `-e` display an extended project dashboard.
 
 * `pm stats` displays the statistics on the current year. Options are:
 	* `pm stats --start [-S] [DATE] --end [-E] [DATE]` displays the statistics between the start date and the ending date;

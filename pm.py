@@ -20,9 +20,11 @@ def main():
 	# Subparser status
 	status_parser = subparsers.add_parser('status', help="display status of the workflow")
 	status_parser.add_argument('-l', '--all', action='store_true', default=False,
-							   help="display ongoing and done projects")
+							   help="display ongoing and done project dashboard")
 	status_parser.add_argument('-o', '--sort', action='store', dest='sort_key', default='status',
 							   help="sort project by key")
+	status_parser.add_argument('-e', '--extended', action='store_true', default=False,
+							   help="display extended project dashboard")
 
 	# Subparser stats
 	stats_parser = subparsers.add_parser('stats', help="display statistics")
@@ -89,7 +91,7 @@ def main():
 
 	# Parse commands
 	if args.command == 'status':
-		wf.status(all=args.all, key=args.sort_key)
+		wf.status(all=args.all, key=args.sort_key, extended=args.extended)
 
 
 	elif args.command == 'history':

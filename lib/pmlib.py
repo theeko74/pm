@@ -103,7 +103,7 @@ class Workflow:
 					color = '\033[91m'
 					end_color = '\033[0m'
 
-			context.append({
+			context_dict = {
 				'id': project.id,
 				'name': project.name[:12],
 				'type': project.type,
@@ -114,21 +114,30 @@ class Workflow:
 				),
 				'comment':comment,
 				'color': color,
-				'end_color': end_color
-			})
+				'end_color': end_color,
+				'money': project.money,
+				'money_year': project.money_year,
+				'ref': project.ref,
+				'pi': project.pi
+			}
+			context.append(context_dict)
 
 		return context
 
 
-	def status(self, all=None, key='status'):
+	def status(self, all=None, key='status', extended=False):
 		"""Display all the status dashboard"""
 		print("-" * settings.WIDTH)
 		
 		# Load context 
 		context = self.status_api(all=all, key=key)
 		for project_context in context:
-			print("{color}#{id:<2} {name:<12}  {type:<4} |{progress:<6}| " \
-				  "{comment}{end_color}".format(**project_context))
+			if not extended:
+				print("{color}#{id:<2} {name:<12}  {type:<4} |{progress:<6}| " \
+					  "{comment}{end_color}".format(**project_context))
+			else:
+				print("{color}#{id:<2} {name:<12}  {type:<4} {status:<5} |{progress:<6}| " \
+					  "{date:<10} {money:>4} {money_year:>3}kE {pi:<12} {ref:<12} {end_color}".format(**project_context))
 			
 		print("-" * settings.WIDTH)
 
